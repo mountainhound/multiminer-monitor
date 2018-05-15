@@ -14,7 +14,7 @@ import os
 import logging
 logging.basicConfig()
 
-import settings as settings
+import micci_settings as settings
 from flask_apscheduler import APScheduler
 #from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -32,27 +32,32 @@ def miner_check():
 				status_code = ret.status_code
 				if status_code == 200: 
 					temps = ret.json().get('data').get('temps')
-					for temp in temps: 
-						temp = temp.replace("C","")
-						temp = int(temp)
-						if temp > settings.ALARM_TEMP: 
-							alarm_dict[key] = str(temp)+"C"
-						if temp > settings.MAX_TEMP: 
-							stop_list.append(key)
-
-				if alarm_dict: 
-					alarm = "TEMP ALARM: \n {}".format(alarm_dict)
-					for number in settings.ROOT_NUMBERS:
-						text_message(app.config['MESSAGE_API'],alarm,number) 
-				if stop_list: 
-					ret = stop_miner(stop_list,settings.MINER_IPS)
-					text_str = "Attemping to Stop Temp Over {} C: \nMiners: {} \nResult: {}".format(settings.MAX_TEMP,stop_list,ret)
-					for number in settings.ROOT_NUMBERS:
-						text_message(app.config['MESSAGE_API'],text_str,number)
+					if temps: 
+						for temp in temps: 
+							temp = temp.replace("C","")
+							temp = int(temp)
+							if temp > settings.ALARM_TEMP: 
+								alarm_dict[key] = str(temp)+"C"
+							if temp > settings.MAX_TEMP: 
+								stop_list.append(key)
 
 			except Exception as err: 
 				print err
-				
+
+		try:
+			if alarm_dict: 
+				alarm = "TEMP ALARM: \n {}".format(alarm_dict)
+				for number in settings.ROOT_NUMBERS:
+					text_message(app.config['MESSAGE_API'],alarm,number) 
+			if stop_list: 
+				ret = stop_miner(stop_list,settings.MINER_IPS)
+				text_str = "Attemping to Stop Temp Over {} C: \nMiners: {} \nResult: {}".format(settings.MAX_TEMP,stop_list,ret)
+				for number in settings.ROOT_NUMBERS:
+					text_message(app.config['MESSAGE_API'],text_str,number)
+		
+		except Exception as err: 
+			print err
+
 		return None
 
 class Config(object):
@@ -61,7 +66,7 @@ class Config(object):
 				'id': 'Miner Bot Maintenance',
 				'func': miner_check,
 				'trigger': 'interval',
-				'seconds': 10,
+				'seconds': settings.INTERVAL*60,
 				'max_instances': 1
 			}
 	]
@@ -236,8 +241,8 @@ if __name__ == '__main__':
 	sched.start()
 	'''
 	#app.run(port = 5000,threaded = True)
-	app.run(port = 5000)
+	#app.run(port = 5000)
 
-	#http_server = WSGIServer(('',5000),app)
-	#http_server.serve_forever()
+	http_server = WSGIServer(('',5000),app)
+	http_server.serve_forever()
 
