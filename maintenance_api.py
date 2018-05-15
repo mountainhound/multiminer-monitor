@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, url_for
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 import requests
 from bandwidth import messaging
 import json
