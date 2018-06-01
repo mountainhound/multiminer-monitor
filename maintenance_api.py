@@ -36,7 +36,7 @@ def miner_check():
 						if isinstance(temps, dict):
 							for num,temp in temps.items(): 
 								temp = temp.replace("C","")
-								temp = int(temp)
+								temp = int(float(temp))
 								if temp > settings.ALARM_TEMP: 
 									alarm_dict[key] = str(temp)+"C"
 								if temp > settings.MAX_TEMP: 
@@ -44,7 +44,7 @@ def miner_check():
 						elif isinstance(temps, list):
 							for temp in temps: 
 								temp = temp.replace("C","")
-								temp = int(temp)
+								temp = int(float(temp))
 								if temp > settings.ALARM_TEMP: 
 									alarm_dict[key] = str(temp)+"C"
 								if temp > settings.MAX_TEMP: 
