@@ -33,13 +33,22 @@ def miner_check():
 				if status_code == 200: 
 					temps = ret.json().get('data').get('temps')
 					if temps: 
-						for temp in temps: 
-							temp = temp.replace("C","")
-							temp = int(temp)
-							if temp > settings.ALARM_TEMP: 
-								alarm_dict[key] = str(temp)+"C"
-							if temp > settings.MAX_TEMP: 
-								stop_list.append(key)
+						if isinstance(temps, dict):
+							for num,temp in temps.items(): 
+								temp = temp.replace("C","")
+								temp = int(temp)
+								if temp > settings.ALARM_TEMP: 
+									alarm_dict[key] = str(temp)+"C"
+								if temp > settings.MAX_TEMP: 
+									stop_list.append(key)
+						elif isinstance(temps, list):
+							for temp in temps: 
+								temp = temp.replace("C","")
+								temp = int(temp)
+								if temp > settings.ALARM_TEMP: 
+									alarm_dict[key] = str(temp)+"C"
+								if temp > settings.MAX_TEMP: 
+									stop_list.append(key)
 
 			except Exception as err: 
 				print err
@@ -215,6 +224,18 @@ def stats():
 
 
 	if "status" in message_body or "stats" in message_body: 
+		miner_list = []
+		print "MINER STATS"
+		for key,value in miner_ips.items():
+			if str(key) in message_body:
+				miner_list.append(key)
+
+		response_dict = miner_stats(miner_list,miner_ips)
+
+		for key,body in response_dict.items():
+			text_message(message_api, body,number) 
+
+	if "mode" in message_body or "stats" in message_body: 
 		miner_list = []
 		print "MINER STATS"
 		for key,value in miner_ips.items():
